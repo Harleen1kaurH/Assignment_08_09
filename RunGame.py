@@ -1,3 +1,17 @@
+#Harleen Kaur Hans
+#Features chosen to implement: Accessing settings from text file 
+#Anomaly that was added: Number Anomaly
+#Any unique data it checks for: Digits/Numbers
+#Any changes to rooms that were made to support this anomaly: No changes
+
+#Response to pair programming questions
+#1. How did you pair program? We met in person and shared screens at times
+#2. Did you work on any parts independently, and what parts if so? Yes, my partner did research on checking number in item at last index and
+#   I worked to make anomaly function work on another rooms if there is no digit in room items in current room 
+#3. What tasks came up that were not planned in Assignment 8, if any? No,it worked well
+#4. About how often did you change who was driver and who was navigator? We changed once 
+#5. If you were to pair program in the future, what changes will you make? 
+
 import Duty
 import random
 import sys
@@ -20,12 +34,9 @@ def main():
     register_anomalies()
 
     # # It might be cleaner to put all of these into their own helper function. Feel free to do that if you think it would be better!
-    # Duty.set_setting("debug", False) # Setting this to True will show additional information to help you debug new anomalies
-    # Duty.set_setting("timescale", 60)
-    # Duty.set_setting("probability", 0.1)
-    # Duty.set_setting("min_seconds_between_anomalies", 10*60)
+    
 
-    #Work starts here 1
+    
 
     if(len(sys.argv)>1):
         #Setting functionlaity to read settings from text file
@@ -39,7 +50,11 @@ def main():
             Duty.set_setting(file_data[0],file_data[1] ) 
             
         file_handler.close()
-
+    else:
+        Duty.set_setting("debug", True) # Setting this to True will show additional information to help you debug new anomalies
+        Duty.set_setting("timescale", 60)
+        Duty.set_setting("probability", 0.1)
+        Duty.set_setting("min_seconds_between_anomalies", 10*60)
 
     # Initialize the game with all of the data we've just set up.
     Duty.init()
@@ -80,7 +95,7 @@ def add_rooms():
     Duty.add_room("Kitchen", ["Gas Stove", "Retro Red Metal Refrigerator", "Oak Wooden Table", "4 Wooden Chairs"])
     Duty.add_room("Bedroom", ["Queen Size Bed", "Oak Wooden Nightstand", "Oak Wooden Dresser", "Oak Wooden Desk", "Oak Wooden Chair"])
     Duty.add_room("Bathroom", ["Toilet with Oak Seat", "Chrome Sink", "Shower with Blue Tiles", "Medicine Cabinet"])
-
+    Duty.add_room("Garage",["Car","Screw Driver 3"])
 
 def register_anomalies():
     """
@@ -93,6 +108,7 @@ def register_anomalies():
     Duty.register_anomaly("ITEM MOVEMENT")
     #Registering new anomaly
     Duty.register_anomaly("NUMBER ANOMALY")
+
 
 def create_anomaly() -> bool:
     """
@@ -126,7 +142,15 @@ def create_anomaly() -> bool:
         return item_movement(room)
     #Here!!
     elif anomaly=="NUMBER ANOMALY":
-        return number_anomaly(room)
+        bool=number_anomaly(room)
+        rooms=Duty.get_rooms()
+        for i in rooms:
+            if bool==True:
+                return bool
+            else:
+                bool=number_anomaly(room)    
+        return bool
+            
     else:
         print(f"ERROR: Anomaly {anomaly} not found")
         return False
@@ -190,7 +214,7 @@ def number_anomaly(room: str)->bool:
     while(i<len(items)):
         j=0
         while (j<len(items[i])):
-            if (items[i][j].isdigit() and items[i][j+1]==" "):
+            if (items[i][j].isdigit() and (items[i][-1].isdigit() or items[i][j+1]==" ")):
                 x=random.randint(-1,1)
                 if(x==0):
                     x=random.randint(-1,1)
@@ -199,8 +223,13 @@ def number_anomaly(room: str)->bool:
                 break
             j+=1
         i+=1
-        if(bool==False):
+
+        if(bool == False):
             break
-    return Duty.add_anomaly("NUMBER ANOMALY", room, new_items)
+
+    return Duty.add_anomaly("NUMBER ANOMALY",room, new_items)
+
+
 
 main()
+
