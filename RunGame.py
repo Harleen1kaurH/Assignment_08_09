@@ -2,15 +2,20 @@
 #Features chosen to implement: Accessing settings from text file 
 #Anomaly that was added: Number Anomaly
 #Any unique data it checks for: Digits/Numbers
-#Any changes to rooms that were made to support this anomaly: No changes
+#Any changes to rooms that were made to support this anomaly: Number/Digits were added to some rooms. But this code works fine even
+#in those cases as it is designed to create number anomaly in some other room if there was no digit in room items in current room in accordance with
+#this line: "In all cases, if the anomaly cannot be added to a room (i.e., add_anomaly() returns False), it should try another" in Assignmnet08 instructions. 
 
 #Response to pair programming questions
-#1. How did you pair program? We met in person and shared screens at times
+#1. How did you pair program? We met in person ,shared screens at times and used github to share code and commit changes. 
 #2. Did you work on any parts independently, and what parts if so? Yes, my partner did research on checking number in item at last index and
-#   I worked to make anomaly function work on another rooms if there is no digit in room items in current room 
-#3. What tasks came up that were not planned in Assignment 8, if any? No,it worked well
-#4. About how often did you change who was driver and who was navigator? We changed once 
-#5. If you were to pair program in the future, what changes will you make? 
+#   I worked  to make anomaly function work on another rooms if there is no digit in room items in current room.
+#3. What tasks came up that were not planned in Assignment 8, if any? No, it worked well as per our expectations. Though new tasks camp
+#   up while we were designing algorithm (bonus part) of Assignmnet 08 which was : handling digit at last index of room item
+#4. About how often did you change who was driver and who was navigator? We changed it once after coding/designing Category 1 part
+#   to ensure that we both had experience of being a navigator and driver. 
+#5. If you were to pair program in the future, what changes will you make? We will try to switch roles of navigator and driver more frequently as 
+#   it helped us to detect potential issued with our code and will try to make communications more clear and concrete to increase efficiency. 
 
 import Duty
 import random
@@ -40,18 +45,28 @@ def main():
 
     if(len(sys.argv)>1):
         #Setting functionlaity to read settings from text file
+
         file_handler=open("Settings.txt","r")
         
         while True:
+            #Initialisng file handler 
             file_data=file_handler.readline()
+
+            #When empty line appears/ entire content of file is read 
             if(file_data==""):
                 break
+            #Accessing data from text file and using it to set settings 
             file_data=file_data.split(":")
             Duty.set_setting(file_data[0],file_data[1] ) 
-            
+        
+        #Closing file handler 
         file_handler.close()
+
+    #No command line argument is given 
     else:
-        Duty.set_setting("debug", True) # Setting this to True will show additional information to help you debug new anomalies
+
+        #Finalising default settings 
+        Duty.set_setting("debug", True) 
         Duty.set_setting("timescale", 60)
         Duty.set_setting("probability", 0.1)
         Duty.set_setting("min_seconds_between_anomalies", 10*60)
@@ -91,11 +106,12 @@ def add_rooms():
     Adds all of the rooms to the game. 
     Duty.add_room() takes a string for the name of a room and a list of strings for the items in the room.
     """
-    Duty.add_room("Living Room", ["42\" TV Playing Golf", "Black Leather Sofa", "Circular Metal Coffee Table", "Wooden Bookshelf with 3 Shelves"])
+
+    Duty.add_room("Living Room", ["42 \" TV Playing Golf", "Black Leather Sofa", "Circular Metal Coffee Table", "Wooden Bookshelf with 3 Shelves"])
     Duty.add_room("Kitchen", ["Gas Stove", "Retro Red Metal Refrigerator", "Oak Wooden Table", "4 Wooden Chairs"])
-    Duty.add_room("Bedroom", ["Queen Size Bed", "Oak Wooden Nightstand", "Oak Wooden Dresser", "Oak Wooden Desk", "Oak Wooden Chair"])
-    Duty.add_room("Bathroom", ["Toilet with Oak Seat", "Chrome Sink", "Shower with Blue Tiles", "Medicine Cabinet"])
-    Duty.add_room("Garage",["Car","Screw Driver 3"])
+    Duty.add_room("Bedroom", ["Queen Size Bed", "Oak Wooden Nightstand", "Oak Wooden Dresser", "Oak Wooden Desk", "2 Oak Wooden Chairs"])
+    Duty.add_room("Bathroom", ["Toilet with Oak Seat", "3 Chrome Sinks", "Shower with Blue Tiles", "Medicine Cabinet"])
+    Duty.add_room("Garage",["Car","Screw Driver  no: 3"])
 
 def register_anomalies():
     """
@@ -106,7 +122,7 @@ def register_anomalies():
     Duty.register_anomaly("CAMERA MALFUNCTION")
     Duty.register_anomaly("MISSING ITEM")
     Duty.register_anomaly("ITEM MOVEMENT")
-    #Registering new anomaly
+    #Registering new number anomaly
     Duty.register_anomaly("NUMBER ANOMALY")
 
 
@@ -140,10 +156,15 @@ def create_anomaly() -> bool:
         return missing_item(room)
     elif anomaly == "ITEM MOVEMENT":
         return item_movement(room)
-    #Here!!
+    
+    # Calling number_anomaly function if it is the anomlay to be created 
     elif anomaly=="NUMBER ANOMALY":
         bool=number_anomaly(room)
+
+        #getting list of rooms 
         rooms=Duty.get_rooms()
+
+        #Calling number_anomaly function on another room if it returns false on current room and returning True otherwise 
         for i in rooms:
             if bool==True:
                 return bool
@@ -207,23 +228,38 @@ def item_movement(room: str) -> bool:
 
 
 def number_anomaly(room: str)->bool:
+
+    #List of all items in room 
     items = Duty.get_room_items(room)
+
+    #Creating deep copy of items 
     new_items=items[:]
     i=0
     bool=True
+
+    #Traversing items in room  
     while(i<len(items)):
         j=0
+
+        #Traversing single room item character by character 
         while (j<len(items[i])):
+
+            #Checking if character is digit 
             if (items[i][j].isdigit() and (items[i][-1].isdigit() or items[i][j+1]==" ")):
+
+                # +1/-1 on digit at random 
                 x=random.randint(-1,1)
-                if(x==0):
+                while(x==0):
                     x=random.randint(-1,1)
+
+                #Changing room item in new list 
                 new_items[i] = new_items[i][:j] + str(int(items[i][j]) + x) + new_items[i][j + 1:]
                 bool=False
                 break
             j+=1
         i+=1
 
+        #Breaking the loop once number anomaly is created in any of the room items 
         if(bool == False):
             break
 
@@ -232,4 +268,3 @@ def number_anomaly(room: str)->bool:
 
 
 main()
-
