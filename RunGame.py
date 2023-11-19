@@ -45,8 +45,8 @@ def main():
 
     if(len(sys.argv)>1):
         #Setting functionlaity to read settings from text file
-
-        file_handler=open("Settings.txt","r")
+        file=sys.argv[1]
+        file_handler=open(file,"r")
         
         while True:
             #Initialisng file handler 
